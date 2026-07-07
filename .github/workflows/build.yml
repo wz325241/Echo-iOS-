@@ -1,0 +1,26 @@
+name: Build iOS App
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Build archive
+        run: |
+          xcodebuild -project Echo-iOS.xcodeproj -scheme Echo-iOS -configuration Release -archivePath ${{ github.workspace }}/Echo-iOS.xcarchive archive
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive -archivePath ${{ github.workspace }}/Echo-iOS.xcarchive -exportOptionsPlist exportOptions.plist -exportPath ${{ github.workspace }}/build
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Echo-iOS
+          path: ${{ github.workspace }}/build/*.ipa
